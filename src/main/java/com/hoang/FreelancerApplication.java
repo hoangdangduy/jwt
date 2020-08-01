@@ -1,4 +1,4 @@
-package com.hoang.freelancer;
+package com.hoang;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
