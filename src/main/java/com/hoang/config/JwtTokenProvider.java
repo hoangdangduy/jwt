@@ -17,22 +17,45 @@ public class JwtTokenProvider {
 
     @Value("${app.jwtExpirationInMs}")
     private int jwtExpirationInMs;
+    
+    @Value("${app.jwtRefreshTokenExpirationInMs}")
+    private int jwtRefreshTokenExpirationInMs;
 
-    public String generateToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-
+        Claims claims = Jwts.claims();
+        claims.setExpiration(expiryDate);
+        claims.setSubject(Long.toString(userPrincipal.getId()));
+        claims.setIssuedAt(new Date());
+        claims.put("role", "ROLE_USER");
+        
         return Jwts.builder()
-                .setSubject(Long.toString(userPrincipal.getId()))
-                .setIssuedAt(new Date())
-                .setExpiration(expiryDate)
+                .setClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
-
+    
+    public String generateRefreshToken(Authentication authentication) {
+        
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtRefreshTokenExpirationInMs);
+        Claims claims = Jwts.claims();
+        claims.setExpiration(expiryDate);
+        claims.setSubject(Long.toString(userPrincipal.getId()));
+        claims.setIssuedAt(new Date());
+        
+        return Jwts.builder()
+            .setClaims(claims)
+            .signWith(SignatureAlgorithm.HS512, jwtSecret)
+            .compact();
+    }
+    
     public Long getUserIdFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .setSigningKey(jwtSecret)
@@ -40,6 +63,15 @@ public class JwtTokenProvider {
                 .getBody();
 
         return Long.parseLong(claims.getSubject());
+    }
+    
+    public String getRoleFromJWT(String token) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(jwtSecret)
+            .parseClaimsJws(token)
+            .getBody();
+        
+        return claims.get("role") != null ? claims.get("role").toString() : null;
     }
 
     public boolean validateToken(String authToken) {

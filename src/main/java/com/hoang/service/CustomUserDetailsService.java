@@ -30,10 +30,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         return UserPrincipal.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .password(user.getPassword())
                 .build();
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public UserDetails loadUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException("Id: " + id + " not found")
@@ -42,6 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return UserPrincipal.builder()
                 .id(user.getId())
                 .username(user.getUsername())
+                .password(user.getPassword())
                 .build();
     }
 }

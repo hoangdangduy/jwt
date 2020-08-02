@@ -7,16 +7,18 @@ import com.hoang.model.request.LoginRequest;
 import com.hoang.model.request.SignUpRequest;
 import com.hoang.repository.UserRepository;
 import com.hoang.service.UserService;
+import com.hoang.util.AppConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -24,8 +26,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    final
-    PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String authenticateUser(LoginRequest loginRequest) {
+    public Map<String, String> authenticateUser(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsernameOrEmail(),
@@ -67,8 +68,15 @@ public class UserServiceImpl implements UserService {
                 )
         );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        return tokenProvider.generateToken(authentication);
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Map<String, String> mapToken = new HashMap<>();
+        mapToken.put("access-token", AppConstant.TOKEN_TYPE + " " + tokenProvider.generateAccessToken(authentication));
+        mapToken.put("refresh-token", AppConstant.TOKEN_TYPE + " " + tokenProvider.generateRefreshToken(authentication));
+        return mapToken;
+    }
+    
+    @Override
+    public String generateAccessToken(Authentication authentication) {
+        return AppConstant.TOKEN_TYPE + " " + tokenProvider.generateAccessToken(authentication);
     }
 }

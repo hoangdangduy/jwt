@@ -2,11 +2,9 @@ package com.hoang.entity;
 
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 /**
  * @author hoangdd
@@ -15,6 +13,7 @@ import javax.validation.constraints.Size;
 @Data
 @Table(name = "USER")
 @Entity
+@NoArgsConstructor
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
